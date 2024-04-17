@@ -27,7 +27,7 @@ export default function(sequelize: Sequelize): ModelStatic<HoursWorkedInstance> 
             allowNull: false
         },
         hours: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.DOUBLE,
             allowNull: false
         },
         employeeId: {
