@@ -1,3 +1,17 @@
+authentication & ratelimit middleware
+error handling, 
+validating input data more robustly
+correctly calculating the payroll based on pay periods and job groups
+asynchronous processing for handling large files
+complex computations in the background.
+
+
+1. Making sure port is available for Postgres
+  lsof -PiTCP -sTCP:LISTEN | grep 5432
+
+2. Stat the application
+  
+
 # Wave Software Development Challenge
 
 Applicants for the Full-stack Developer role at Wave must
