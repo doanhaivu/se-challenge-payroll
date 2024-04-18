@@ -2,27 +2,42 @@
 
 1. MacOS & Docker
 2. Make sure port is available for Postgres
-  lsof -PiTCP -sTCP:LISTEN | grep 5432
+  `lsof -PiTCP -sTCP:LISTEN | grep 5432`
 3. Antivirus software may block the app container to connect with db container
+
+### Application structure
+
+  - The `config` directory contains configuration file that manage application settings 
+  - `controllers` handle the business logic, receive input from requests, process the required business logic, and return the appropriate response.
+  - `models` represent the data structure and are used to interact with the database.
+  - `routes` define the URLs (endpoints) and map these URLs to the corresponding controller actions.
+  - The `test` directory contains the test cases for the application.
+  - The `app.ts` file is the entry point of the application. It sets up the server, imports routes, and sets the application to listen on a specific port
 
 ### Testing the application
 
-1. Option 1, integration test, requires locally installed Node.js:
+1. Integration test, requires locally installed Node.js:
     1. `npm run db:up` to start the database container
     2. In the project folder, run: `npm run test`
 
-2. Option 2, manual test, using docker:
-    1. npm run docker:up to start database and application container
+2. Manual test, using docker:
+    1. `docker-compose up -d` or `npm run docker:up` to start database and application container
     2. POST to `localhost:3000/api/upload`
     With Postman, select form-data as Body, set "file" as Key and browse the csv file as Value
-    (see screenshot sent with email)
     3. GET to `localhost:3000/api/reports/payroll`
 
-### Future improvements
+### Answers to the following questions:
+1. How did you test that your implementation was correct
+    Verify the output is the same as in the example
 
-1. Authentication & ratelimit middleware
-2. Asynchronous processing for handling large files
-3. Pay report computations in the background.
+2. If this application was destined for a production environment, what would you add or change?
+    - Authentication, authorization & ratelimit
+    - Background processing for handling large files and report computations
+    - Store & cache pay report
+
+3. What compromises did you have to make as a result of the time constraints of this challenge?
+    - Database indices could be added
+    - Other than implement the above features for production environment, I would add linter for better code format and convention
 
 # Wave Software Development Challenge
 
