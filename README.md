@@ -1,16 +1,28 @@
-authentication & ratelimit middleware
-error handling, 
-validating input data more robustly
-correctly calculating the payroll based on pay periods and job groups
-asynchronous processing for handling large files
-complex computations in the background.
+### Prerequisites
 
-
-1. Making sure port is available for Postgres
+1. MacOS & Docker
+2. Make sure port is available for Postgres
   lsof -PiTCP -sTCP:LISTEN | grep 5432
+3. Antivirus software may block the app container to connect with db container
 
-2. Stat the application
-  
+### Testing the application
+
+1. Option 1, integration test, requires locally installed Node.js:
+    1. `npm run db:up` to start the database container
+    2. In the project folder, run: `npm run test`
+
+2. Option 2, manual test, using docker:
+    1. npm run docker:up to start database and application container
+    2. POST to `localhost:3000/api/upload`
+    With Postman, select form-data as Body, set "file" as Key and browse the csv file as Value
+    (see screenshot sent with email)
+    3. GET to `localhost:3000/api/reports/payroll`
+
+### Future improvements
+
+1. Authentication & ratelimit middleware
+2. Asynchronous processing for handling large files
+3. Pay report computations in the background.
 
 # Wave Software Development Challenge
 

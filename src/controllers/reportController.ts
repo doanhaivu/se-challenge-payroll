@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import db from '../models/index';
-import { Op } from 'sequelize';
 import { format } from 'date-fns';
 
 export class ReportController {

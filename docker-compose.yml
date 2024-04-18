@@ -12,7 +12,7 @@ services:
       - DATABASE_PASSWORD=postgres
       - DATABASE_NAME=payroll
   db:
-    image: postgres:13
+    image: postgres:latest
     ports:
       - "5432:5432"
     environment:
@@ -20,7 +20,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  db_data:
