@@ -1,15 +1,17 @@
 import request from 'supertest';
 import { app } from '../src/app';
-import { setupDatabase, teardownDatabase } from './testSetup';
+import { cleanUpTables, setupDatabase, teardownDatabase } from './testSetup';
 import path from 'path';
-import { readFileSync } from 'fs';
-import { fi } from 'date-fns/locale';
 
 const filePath = path.join(__dirname, '../time-report-42.csv');
 
-describe.only('CSV Upload', () => {
+describe('CSV Upload', () => {
   beforeAll(async () => {
     await setupDatabase();
+  });
+
+  beforeEach(async () => {
+    await cleanUpTables();
   });
 
   afterAll(async () => {
@@ -26,15 +28,15 @@ describe.only('CSV Upload', () => {
 
   it('should prevent duplicate CSV uploads', async () => {
     await request(app)
-      .post('/upload')
+      .post('/api/upload')
       .attach('file', filePath)
       .expect(201); // First upload should succeed
 
     const response = await request(app)
-      .post('/upload')
+      .post('/api/upload')
       .attach('file', filePath)
       .expect(400); // Second upload should fail
 
-    expect(response.body.message).toContain('not allowed');
+    expect(response.body.message).toContain('Time report ID already exists.');
   });
 });

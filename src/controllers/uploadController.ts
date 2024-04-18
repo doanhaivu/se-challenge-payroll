@@ -21,7 +21,6 @@ const renameHeader = (header: string) => {
     };
     return headersMap[header.trim().toLowerCase()] || header;
 };
-
 export class UploadController {
     static uploadCSV = [
         upload.single('file'),
@@ -48,44 +47,49 @@ export class UploadController {
 
             const data: DataRow[] = parsed.data;
             const timeReportId = parseInt(req.file.originalname.split('-')[2] ?? '0');
+
+            let transaction;
             try {
-                await db.sequelize.transaction(async (transaction) => {
-                    const [timeReport, timeReportCreated] = await db.TimeReports.findOrCreate({
-                        where: { id: timeReportId },
+                transaction = await db.sequelize.transaction();
+                const [timeReport, timeReportCreated] = await db.TimeReports.findOrCreate({
+                    where: { id: timeReportId },
+                    transaction
+                });
+
+                if (!timeReportCreated) {
+                    await transaction.rollback();
+                    return res.status(400).send({ message: 'Time report ID already exists.' });
+                }
+
+                for (const row of data) {
+                    const formattedDate = moment(row.date, 'DD/MM/YYYY').isValid() ? moment(row.date, 'DD/MM/YYYY').toDate() : null;
+                    if (!formattedDate) {
+                        console.error("Invalid date format:", row.date);
+                        continue;
+                    }
+
+                    const [employee, created] = await db.Employees.findOrCreate({
+                        where: { employeeId: row.employeeId },
+                        defaults: { jobGroup: row.jobGroup },
                         transaction
                     });
-                    for (const row of data) {
-                        const formattedDate = moment(row.date, 'DD/MM/YYYY').isValid() ? moment(row.date, 'DD/MM/YYYY').toDate() : null;
-                        if (!formattedDate) {
-                            console.error("Invalid date format:", row.date);
-                            continue;
-                        }
-                        try {
-                            const [employee, created] = await db.Employees.findOrCreate({
-                                where: { employeeId: row.employeeId },
-                                defaults: { jobGroup: row.jobGroup },
-                                transaction
-                            });
-                        } catch (error: any) {
-                            console.error("Error finding or creating employee:", error);
-                            return res.status(500).send({ message: 'Internal server error', details: error.message });
-                        }
-                        try {
-                            await db.HoursWorked.create({
-                                date: formattedDate.toISOString(),
-                                hours: row.hours,
-                                employeeId: row.employeeId,
-                                timeReportId: timeReport.id,
-                            }, { transaction });
-                        } catch (error: any) {
-                            console.error("Error updating hours:", error);
-                            return res.status(500).send({ message: 'Internal server error', details: error.message });
-                        }
-                    }
-                });
+
+                    await db.HoursWorked.create({
+                        date: formattedDate.toISOString(),
+                        hours: row.hours,
+                        employeeId: row.employeeId,
+                        timeReportId: timeReport.id,
+                    }, { transaction });
+                }
+
+                await transaction.commit();
                 res.status(201).send({ message: 'File uploaded and processed successfully.' });
             } catch (error: any) {
-                res.status(500).send({ message: 'Failed to process file', error: error.message });
+                console.log(`Error during processing, rolling back transaction`);
+                if (transaction) await transaction.rollback();
+                if (!res.headersSent) {
+                    res.status(500).send({ message: 'Failed to process file', error: error.message });
+                }
             }
         }
     ];

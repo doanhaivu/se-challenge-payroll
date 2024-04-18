@@ -13,7 +13,7 @@ export default function (sequelize: Sequelize): ModelStatic<EmployeeInstance> {
         }
     }, {
         timestamps: false,
-        tableName: 'Employees'  // Explicitly defining the table name for clarity
+        tableName: 'Employees'
     });
 }
 

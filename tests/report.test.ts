@@ -1,19 +1,32 @@
 import request from 'supertest';
 import { app } from '../src/app';
-import { setupDatabase, teardownDatabase } from './testSetup';
+import { cleanUpTables, setupDatabase, teardownDatabase } from './testSetup';
+import path from 'path';
 
-describe.skip('Payroll Report', () => {
-    beforeEach(async () => {
+const filePath = path.join(__dirname, '../time-report-43.csv');
+
+describe('Payroll Report', () => {
+    beforeAll(async () => {
         await setupDatabase();
     });
-  
-    afterEach(async () => {
+
+    beforeEach(async () => {
+        await cleanUpTables();
+    });
+
+    afterAll(async () => {
         await teardownDatabase();
     });
 
     it('should retrieve a correct payroll report', async () => {
+        const uploadResponse = await request(app)
+        .post('/api/upload')
+        .attach('file', filePath)
+        .expect(201);
+        expect(uploadResponse.body.message).toEqual('File uploaded and processed successfully.');
+
         const response = await request(app)
-        .get('/reports/payroll')
+        .get('/api/reports/payroll')
         .expect(200);
 
         expect(response.body).toEqual({
